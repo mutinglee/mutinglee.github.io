@@ -1,120 +1,50 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <title>Geolocation Test</title>
-  <style>
-    body {
-      font-size: 18px; /* 整體字體放大 */
-      font-family: Arial, sans-serif; /* 可以選擇好看的字體 */
-    }
-
-    h1 {
-      font-size: 32px;
-    }
-
-    h3 {
-      font-size: 24px;
-    }
-
-    p {
-      font-size: 18px;
-    }
-
-    button {
-      font-size: 16px;
-      padding: 8px 12px;
-      margin: 5px;
-    }
-  </style>
-</head>
-<body>
-  <h1>Geolocation Test</h1>
-  <button onclick="getLocation()">Get Current Position</button>
-  <button onclick="watchLocation()">Watch Position</button>
-  <button onclick="stopWatch()">Stop Watching</button>
-  
-  <div id="status"></div>
-  <div id="coordinates"></div>
-
-  <script>
-    let currentWatchId = null;
-
-    function getLocation() {
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported');
-        return;
+  <head>
+    <title>Get Client Info Meta</title>
+    <style>
+      body {
+        font-size: 2em;
       }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          displayPosition(position);
-          displayStatus('Success!');
-        },
-        (error) => {
-          displayStatus(`Error: ${error.code} - ${error.message}`);
-          displayCoordinates('');
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 30000,
-          maximumAge: 60000
+      button {
+        font-size: 2em;
+        padding: 1em 2em;
+      }
+      pre {
+        font-size: 1.5em;
+      }
+    </style>
+  </head>
+  <body>
+    <button id="getInfoBtn">Get Client Info Meta</button>
+    <button id="goTo"> Go to 203.208.133.26 </button>
+    <pre id="output"></pre>
+    <script>
+      
+      document.getElementById('getInfoBtn').onclick = async function() {
+        try {
+            // Wait for the puffin API to be ready
+            await window.__puffinAPIPromise;
+            
+            // Check if the internal API is available
+            if (window.__puffinAPI && 
+                window.__puffinAPI.__puffinInternal &&
+                typeof window.__puffinAPI.__puffinInternal.getClientInfoMeta === "function") {
+            
+            const info = await window.__puffinAPI.__puffinInternal.getClientInfoMeta();
+            document.getElementById('output').textContent = JSON.stringify(info, null, 2);
+            } else {
+            document.getElementById('output').textContent = "__puffinAPI.__puffinInternal.getClientInfoMeta is not available!";
+            }
+        } catch (e) {
+            document.getElementById('output').textContent = "Error: " + e;
         }
-      );
-    }
+        };
 
-    function watchLocation() {
-      if (!navigator.geolocation) {
-        alert('Geolocation is not supported');
-        return;
-      }
-
-      currentWatchId = navigator.geolocation.watchPosition(
-        (position) => {
-          displayPosition(position);
-          displayStatus('Watching...');
-        },
-        (error) => {
-          displayStatus(`Error: ${error.code} - ${error.message}`);
-          displayCoordinates('');
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 30000,
-          maximumAge: 0
-        }
-      );
-    }
-
-    function stopWatch() {
-      if (currentWatchId !== null) {
-        navigator.geolocation.clearWatch(currentWatchId);
-        currentWatchId = null;
-        displayStatus('Stopped watching');
-      }
-    }
-
-    function displayPosition(position) {
-      const coords = position.coords;
-      const html = `
-        <h3>Coordinates:</h3>
-        <p><strong>Latitude:</strong> ${coords.latitude}</p>
-        <p><strong>Longitude:</strong> ${coords.longitude}</p>
-        <p><strong>Accuracy:</strong> ${coords.accuracy} meters</p>
-        ${coords.altitude !== null ? `<p><strong>Altitude:</strong> ${coords.altitude} meters</p>` : ''}
-        ${coords.heading !== null ? `<p><strong>Heading:</strong> ${coords.heading}°</p>` : ''}
-        ${coords.speed !== null ? `<p><strong>Speed:</strong> ${coords.speed} m/s</p>` : ''}
-        <p><strong>Timestamp:</strong> ${new Date(position.timestamp).toLocaleString()}</p>
-      `;
-      displayCoordinates(html);
-    }
-
-    function displayStatus(message) {
-      document.getElementById('status').textContent = message;
-    }
-
-    function displayCoordinates(html) {
-      document.getElementById('coordinates').innerHTML = html;
-    }
-  </script>
-</body>
+      document.getElementById('goTo').onclick = function() {
+        window.location.href = 'http://203.208.133.26:10000';
+      };
+    </script>
+  </body>
 </html>
+
