@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>文件預覽示範</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 28px;   /* 整體文字大 */
+      padding: 30px;
+    }
+
+    h1 {
+      font-size: 48px;   /* 標題最大 */
+      margin-bottom: 40px;
+    }
+
+    button {
+      font-size: 32px;   /* 按鈕文字大 */
+      padding: 20px 40px;
+      margin: 15px 0;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>文件預覽示範</h1>
+
+  <button id="previewPdf">直接預覽 PDF</button><br>
+  <button id="downloadPreviewPdf">下載後立即預覽 PDF</button><br>
+  <button id="previewPng">預覽 PNG</button>
+
+  <script>
+    const pdfFile = 'puffin-Test.pdf'; // 同資料夾下的 PDF
+    const pngFile = 'puffin-Test.png';  // 同資料夾下的 PNG
+
+    // 1️⃣ 直接預覽 PDF（新分頁）
+    document.getElementById('previewPdf').addEventListener('click', () => {
+      window.open(pdfFile, '_blank');
+    });
+
+    // 2️⃣ 下載後立即預覽 PDF
+    document.getElementById('downloadPreviewPdf').addEventListener('click', async () => {
+      try {
+        const response = await fetch(pdfFile);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (err) {
+        console.error('PDF 預覽錯誤:', err);
+      }
+    });
+
+    // 3️⃣ 預覽 PNG（新分頁）
+    document.getElementById('previewPng').addEventListener('click', async () => {
+      try {
+        const response = await fetch(pngFile);
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (err) {
+        console.error('PNG 預覽錯誤:', err);
+      }
+    });
+  </script>
+</body>
+</html>
+
