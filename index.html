@@ -1,68 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>文件預覽示範</title>
+  <title>Geolocation Test</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      font-size: 28px;   /* 整體文字大 */
-      padding: 30px;
+      font-size: 18px; /* 整體字體放大 */
+      font-family: Arial, sans-serif; /* 可以選擇好看的字體 */
     }
 
     h1 {
-      font-size: 48px;   /* 標題最大 */
-      margin-bottom: 40px;
+      font-size: 32px;
+    }
+
+    h3 {
+      font-size: 24px;
+    }
+
+    p {
+      font-size: 18px;
     }
 
     button {
-      font-size: 32px;   /* 按鈕文字大 */
-      padding: 20px 40px;
-      margin: 15px 0;
-      cursor: pointer;
+      font-size: 16px;
+      padding: 8px 12px;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-  <h1>文件預覽示範</h1>
-
-  <button id="previewPdf">直接預覽 PDF</button><br>
-  <button id="downloadPreviewPdf">下載後立即預覽 PDF</button><br>
-  <button id="previewPng">預覽 PNG</button>
+  <h1>Geolocation Test</h1>
+  <button onclick="getLocation()">Get Current Position</button>
+  <button onclick="watchLocation()">Watch Position</button>
+  <button onclick="stopWatch()">Stop Watching</button>
+  
+  <div id="status"></div>
+  <div id="coordinates"></div>
 
   <script>
-    const pdfFile = 'puffin-Test.pdf'; // 同資料夾下的 PDF
-    const pngFile = 'puffin-Test.png';  // 同資料夾下的 PNG
+    let currentWatchId = null;
 
-    // 1️⃣ 直接預覽 PDF（新分頁）
-    document.getElementById('previewPdf').addEventListener('click', () => {
-      window.open(pdfFile, '_blank');
-    });
-
-    // 2️⃣ 下載後立即預覽 PDF
-    document.getElementById('downloadPreviewPdf').addEventListener('click', async () => {
-      try {
-        const response = await fetch(pdfFile);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-      } catch (err) {
-        console.error('PDF 預覽錯誤:', err);
+    function getLocation() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported');
+        return;
       }
-    });
 
-    // 3️⃣ 預覽 PNG（新分頁）
-    document.getElementById('previewPng').addEventListener('click', async () => {
-      try {
-        const response = await fetch(pngFile);
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        window.open(url, '_blank');
-      } catch (err) {
-        console.error('PNG 預覽錯誤:', err);
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          displayPosition(position);
+          displayStatus('Success!');
+        },
+        (error) => {
+          displayStatus(`Error: ${error.code} - ${error.message}`);
+          displayCoordinates('');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 30000,
+          maximumAge: 60000
+        }
+      );
+    }
+
+    function watchLocation() {
+      if (!navigator.geolocation) {
+        alert('Geolocation is not supported');
+        return;
       }
-    });
+
+      currentWatchId = navigator.geolocation.watchPosition(
+        (position) => {
+          displayPosition(position);
+          displayStatus('Watching...');
+        },
+        (error) => {
+          displayStatus(`Error: ${error.code} - ${error.message}`);
+          displayCoordinates('');
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 30000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function stopWatch() {
+      if (currentWatchId !== null) {
+        navigator.geolocation.clearWatch(currentWatchId);
+        currentWatchId = null;
+        displayStatus('Stopped watching');
+      }
+    }
+
+    function displayPosition(position) {
+      const coords = position.coords;
+      const html = `
+        <h3>Coordinates:</h3>
+        <p><strong>Latitude:</strong> ${coords.latitude}</p>
+        <p><strong>Longitude:</strong> ${coords.longitude}</p>
+        <p><strong>Accuracy:</strong> ${coords.accuracy} meters</p>
+        ${coords.altitude !== null ? `<p><strong>Altitude:</strong> ${coords.altitude} meters</p>` : ''}
+        ${coords.heading !== null ? `<p><strong>Heading:</strong> ${coords.heading}°</p>` : ''}
+        ${coords.speed !== null ? `<p><strong>Speed:</strong> ${coords.speed} m/s</p>` : ''}
+        <p><strong>Timestamp:</strong> ${new Date(position.timestamp).toLocaleString()}</p>
+      `;
+      displayCoordinates(html);
+    }
+
+    function displayStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+
+    function displayCoordinates(html) {
+      document.getElementById('coordinates').innerHTML = html;
+    }
   </script>
 </body>
 </html>
-
